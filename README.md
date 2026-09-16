@@ -30,7 +30,7 @@ fimo # test
 ```
 If this pulls up the FIMO help page on the screen, you should be good to go.
 #### Conda env: `motifai`
-The MotifAI software is implemented using helper scripts in the R programming language. If you do not R installed, you can simply use this conda env setup through a `environment.yml` file, part of the official GitHub distribution for MotifAI. This file is downloaded upon `git clone` (contents shown below):
+The MotifAI software is implemented using helper scripts in the R programming language. If you do not R installed, you can simply use this conda env setup through a `environment.yaml` file, part of the official GitHub distribution for MotifAI. This file is downloaded upon `git clone` (contents shown below):
 ```yaml
 name: motifai
 channels:
