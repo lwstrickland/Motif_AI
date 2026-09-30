@@ -1,0 +1,60 @@
+#!/usr/bin/env bash
+
+set -uo pipefail
+
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+REPO_ROOT="$(cd "${SCRIPT_DIR}/.." && pwd)"
+ENV_DIR="${REPO_ROOT}/envs"
+
+# Use mamba's CLI if present; fall back to plain conda otherwise
+if command -v mamba >/dev/null 2>&1; then
+    CONDA_BIN=mamba
+elif command -v conda >/dev/null 2>&1; then
+    CONDA_BIN=conda
+else
+    echo "ERROR: neither 'mamba' nor 'conda' found on PATH." >&2
+    echo "Install Miniforge (https://github.com/conda-forge/miniforge) or Miniconda (https://www.anaconda.com/docs/getting-started/miniconda/install/linux-install) first, then re-run this script." >&2
+    exit 1
+fi
+
+# Function: create_env_if_missing YAML_FILE ENV_NAME
+create_env_if_missing() {
+    local yaml_file="$1"
+    local env_name="$2"
+    local log_file="/tmp/${env_name}_install.log"
+
+    if conda env list | grep -qE "^\s*${env_name}\s"; then
+        echo "[skip]   '${env_name}' already exists."
+        return 0
+    fi
+
+    if [ ! -f "${yaml_file}" ]; then
+        echo "[FAIL]   '${env_name}': ${yaml_file} not found." >&2
+        return 1
+    fi
+
+    echo "[create] '${env_name}' from $(basename "${yaml_file}") ..."
+    if "${CONDA_BIN}" env create -y -f "${yaml_file}" -n "${env_name}" > "${log_file}" 2>&1; then
+        echo "[ok]     '${env_name}' created."
+    else
+        echo "[FAIL]   '${env_name}' failed to build. Full solver output: ${log_file}" >&2
+        return 1
+    fi
+}
+
+# Call function to build conda envs
+FAILED=0
+create_env_if_missing "${ENV_DIR}/meme.yaml"           "meme"           || FAILED=1
+create_env_if_missing "${ENV_DIR}/motifai.yaml"        "motifai"        || FAILED=1
+create_env_if_missing "${ENV_DIR}/download-tools.yaml" "download-tools" || FAILED=1
+
+# Report to user
+echo ""
+if [ "${FAILED}" -eq 0 ]; then
+    echo "All necessary conda environments ready."
+else
+    echo "One or more environments failed to build. Check the log file(s) referenced" >&2
+    echo "above, or create the failing environment manually with:" >&2
+    echo "  conda env create -f envs/<file>.yaml -n <env-name>" >&2
+    exit 1
+fi

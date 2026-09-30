@@ -1,0 +1,8 @@
+name: download-tools
+channels:
+  - conda-forge
+  - nodefaults
+dependencies:
+  - zenodo_get
+  - aria2
+  - huggingface_hub

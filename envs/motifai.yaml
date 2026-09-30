@@ -1,0 +1,19 @@
+name: motifai
+channels:
+  - conda-forge
+  - bioconda
+  - nodefaults
+dependencies:
+  - r-base=4.3
+  - r-tidyverse
+  - r-glue
+  - r-cowplot
+  - r-showtext
+  - r-showtextdb
+  - r-sysfonts
+  - r-caret
+  - r-prroc
+  - r-argparse
+  - r-xgboost=1.7.6
+  - bioconductor-genomicranges=1.54.1
+  - bioconductor-rtracklayer=1.62.0
