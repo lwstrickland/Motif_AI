@@ -1,7 +1,8 @@
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.23046565.svg)](https://doi.org/10.5281/zenodo.23046565)
 # Coming soon!
 MotifAI is still under active development, but will come online soon.
 # MotifAI: A machine learning framework for prioritizing transcription factor binding motifs in putative regulatory DNA.
-Current software, such as the popular motif scanning tool Find Individual Motifs Occurrences (FIMO), is able to identify all possible transcription factor (TF) binding motifs in input DNA sequences of interest. However, even from relatively short input sequences, these tools regularly output overwhelming quantities of motifs, making manual selection of high-confidence motif "hits" cumbersome and uncertain work. Trained on a corpus of genetic & epigenetic data in the model plant species *Arabidopsis thaliana*, MotifAI is an ML-powered tool for ranking/prioritizing identified motifs based on likelihood of functionality in regulating cognate gene expression.
+Current software, such as the popular motif scanning tool Find Individual Motif Occurrences (FIMO), can identify all possible transcription factor (TF) binding motifs in input DNA sequences of interest. However, even from relatively short input sequences, these tools regularly output overwhelming quantities of motifs, making manual selection of high-confidence motif "hits" cumbersome and uncertain work. Trained on a corpus of genetic, epigenetic, and evolutionary datasets in the model plant species *Arabidopsis thaliana*, MotifAI is an ML-powered tool for ranking/prioritizing identified motifs based on likelihood of functionality in regulating cognate gene expression.
 # Installation & Setup
 ## Installation
 Download MotifAI via `git clone`:
@@ -30,7 +31,7 @@ fimo # test
 ```
 If this pulls up the FIMO help page on the screen, you should be good to go.
 #### Conda env: `motifai`
-The MotifAI software is implemented using helper scripts in the R programming language. If you do not R installed, you can simply use this conda env setup through a `environment.yaml` file, part of the official GitHub distribution for MotifAI. This file is downloaded upon `git clone` (contents shown below):
+The MotifAI software is implemented using helper scripts in the R programming language. If you do not have R installed, you can simply use this conda environment setup through an `environment.yaml` file, part of the official GitHub distribution for MotifAI. This file is downloaded upon `git clone` (contents shown below):
 ```yaml
 name: motifai
 channels:
@@ -40,6 +41,7 @@ channels:
 dependencies:
   - r-base=4.3
   - r-tidyverse
+  - r-glue
   - r-cowplot
   - r-showtext
   - r-showtextdb
