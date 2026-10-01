@@ -1,0 +1,72 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# -------------------
+# Usage
+# -------------------
+usage() {
+	cat >&2 << EOF
+Usage: $(basename "$0") -o outdir_path
+
+Download relevant feature data files from Zenodo + model weights from HuggingFace.
+
+Required argument:
+	-o        Path of output directory in which to place downloaded data files / model weights
+	
+Optional argument:
+	-h        Print this help message and exit.
+	
+Examples:
+$(basename "$0") -o /home/my-cool-project/motifAI_Data # directs output to exact user-defined path / output directory name
+
+EOF
+	exit 1
+}
+
+# -------------------
+# Parse CLI arguments
+# -------------------
+outdir_path=""
+
+# If no args provided, automatically show help message
+if [[ $# -eq 0 ]]; then
+	usage
+	exit 1
+fi
+
+# Getopts
+	# \?) If argument provided is not recognized, throw this error
+	# :) If a required argument is missing, throw this error
+while getopts ":o" opt; do
+	case "$opt" in
+		o) outdir_path="$OPTARG" ;;
+		h) usage; exit 0 ;;
+		\?) echo "Error: invalid option -$OPTARG" >&2; usage; exit 1 ;;
+		:) echo "Error: option -$OPTARG requires an argument" >&2; usage; exit 1 ;;
+	esac
+done
+
+# Enforce required argument
+if [[ -z "$input_file" ]]; then
+	echo "Error: -i <input_file> is required." >&2
+	usage
+	exit 1
+fi
+
+# -------------------
+# Download data/model
+# -------------------
+echo "Downloading feature data from Zenodo repo . . ."
+conda run -n download-tools --no-capture-output zenodo_get -o "$outdir_path" -w urls.txt -m 23046565
+conda run -n download-tools --no-capture-output aria2c -x 16 -s 16 -i "$outdir_path"/urls.txt -d "$outdir_path"
+unzip "$outdir_path"/Zenodo_files.zip -d "$outdir_path"/Zenodo_files
+rm "$outdir_path"/Zenodo_files.zip
+
+echo "Downloading model from HuggingFace repo . . ."
+HF_XET_HIGH_PERFORMANCE=1
+conda run -n download-tools --no-capture-output \
+hf download lwstrickland/arabidopsis-motifai-v1.0-xgbc arabidopsis-motifai-v1.0-xgbc.ubj \
+--local-dir "$outdir_path"/model
+
+echo "Done."

@@ -1,0 +1,254 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+# Resolve directory this script lives in on user's system --> Enable point to helper R scripts
+SOURCE="${BASH_SOURCE[0]}"
+while [ -L "$SOURCE" ]; do
+    DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+    SOURCE="$(readlink "$SOURCE")"
+    [[ "$SOURCE" != /* ]] && SOURCE="$DIR/$SOURCE"
+done
+SCRIPT_DIR="$(cd -P "$(dirname "$SOURCE")" && pwd)"
+HELPER_DIR="$SCRIPT_DIR/helper"
+
+# -------------------
+# Usage
+# -------------------
+usage() {
+	cat >&2 << EOF
+Usage: $(basename "$0") -i <dna_sequences> -d <data_path> -o <outdir_path> [options]
+
+Runs the MotifAI pipeline:
+1) Identifies all possible motifs in input sequences using FIMO
+2) Assembles the feature table
+3) Ranks motifs based on likelihood of functionality
+
+Required argument:
+    -i <file>    FASTA file holding DNA sequences in which to identify and rank motifs.
+    -d <path>    Path to directory holding `Zenodo_files/` and `model/` subdirectories (defined by user by `motifai_FetchData`).
+    -o <path>    Path to output directory.
+
+Optional arguments:
+	-h           Print this help message and exit.
+
+Example:
+$(basename "$0") -i dna_sequences.fa \
+-d /home/my-cool-project/data/ \
+-o /home/my-cool-project/MotifAI_Run1/motifai_Results
+# Runs MotifAI pipeline on sequences in dna_sequences.fa, placing output files in user-defined results directory
+
+EOF
+	exit 1
+}
+
+# -------------------
+# Parse CLI arguments
+# -------------------
+dna_sequences=""
+data_path=""
+outdir_path=""
+
+# If no args provided, automatically show help message
+if [[ $# -eq 0 ]]; then
+	usage
+	exit 1
+fi
+
+# Getopts
+	# \?) If argument provided is not recognized, throw this error
+	# :) If a required argument is missing, throw this error
+while getopts ":d:z:o:h" opt; do
+	case "$opt" in
+		d) dna_sequences="$OPTARG" ;;
+		z) data_path="$OPTARG" ;;
+		o) outdir_path="$OPTARG" ;;
+		h) usage; exit 0 ;;
+		\?) echo "Error: invalid option -$OPTARG" >&2; usage; exit 1 ;;
+		:) echo "Error: option -$OPTARG requires an argument" >&2; usage; exit 1 ;;
+	esac
+done
+
+# Enforce required arguments
+if [[ -z "$dna_sequences" ]]; then
+	echo "Error: -i <dna_sequences> is required." >&2
+	usage
+	exit 1
+fi
+
+if [[ -z "$data_path" ]]; then
+	echo "Error: -d <data_path> is required." >&2
+	usage
+	exit 1
+fi
+
+if [[ -z "$outdir_path" ]]; then
+	echo "Error: -o <outdir_path> is required." >&2
+	usage
+	exit 1
+fi
+
+# Sanity-check: Does file exist?
+if [[ ! -f "$dna_sequences" ]]; then
+	echo "Error: input file "$dna_sequences" not found." >&2
+	usage
+	exit 1
+fi 
+
+# Fail if user-defined directories do not exist
+if [[ -d "$data_path" ]]; then
+	echo "Error: Directory "$data_path" does not exist." >&2
+	usage
+	exit 1
+fi
+
+if [[ -d "$outdir_path" ]]; then
+	echo "Error: Directory "$outdir_path" does not exist." >&2
+	usage
+	exit 1
+fi
+
+# ----------------------------------
+# Identify motifs in input sequences
+# ----------------------------------
+echo "Identifying all possible motifs in input sequences using FIMO (v5.5.4) . . ."
+conda run -n meme --no-capture-output fimo --oc "${outdir_path}/FIMO_results/" \
+--bfile "${data_path}/Zenodo_files/FIMO/Athaliana_MarkovBackground.bfile" \
+"${data_path}/Zenodo_files/FIMO/FRiPThresh10perc_Filtered_At_DAP-seqLabels.meme" \
+"${dna_sequences}"
+
+# ----------------------------------
+# Initialize feature table . . .
+# ----------------------------------
+echo "Initializing feature table . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/ArrangeFeatureTable.R" \
+--input "${outdir_path}/FIMO_results/fimo.tsv" \
+--output "${outdir_path}/feature_table.rds" \
+--metadata "${data_path}/Zenodo_files/OMalley2016_DAPseq_metadata/OMalley2016_DAP_At_genexmotif_FRiPThresh10perc.tsv"
+
+# ----------------------------------
+# Build up feature table . . .
+# ----------------------------------
+echo "Constructing feature table . . ."
+
+# GC content
+echo "Calculating per-motif GC content . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddGCContent.R" \
+--input "${outdir_path}/feature_table.rds" \
+--output "${outdir_path}/feature_table.rds"
+
+# Seedling ACR overlap
+echo "Detecting overlaps with accessible chromatin regions (ACRs) . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/ " GenomicFeatureOverlap.R \
+--input "${outdir_path}/feature_table.rds" \
+--bed "${data_path}/Zenodo_files/1weekSeedlingACR/1weekSeedlingACRs.bed" \
+--column Seedling_ACROverlap \
+--output "${outdir_path}/feature_table.rds"
+
+# Seedling accessibility signal
+echo "Calculating chromatin accessibility signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/1weekSeedlingACR/1weekSeedlingAccessibilitySignal.bw" \
+--stat mean \
+--column Seedling_AccessibilitySignal \
+--output "${outdir_path}/feature_table.rds"
+
+# CNS overlap
+echo "Detecting overlaps with conserved-noncoding sequences (CNSs) . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GenomicFeatureOverlap.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bed "${data_path}/Zenodo_files/CNS/conservatoryV10.Athaliana.bed" \
+--column CNS_Overlap \
+--output "${outdir_path}/feature_table.rds"
+
+# H3K4me1 signal
+echo "Calculating H3K4me1 signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K4me1.bw" \
+--column H3K4me1 \
+--output "${outdir_path}/feature_table.rds"
+
+# H3K4me3 signal
+echo "Calculating H3K4me3 signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K4me3.bw" \
+--column H3K4me3 \
+--output "${outdir_path}/feature_table.rds"
+
+# H3K27me3 signal
+echo "Calculating H3K27me3 signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K27me3.bw" \
+--column H3K27me3 \
+--output "${outdir_path}/feature_table.rds"
+
+# H3K36me3 signal
+echo "Calculating H3K36me3 signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K36me3.bw" \
+--column H3K36me3 \
+--output "${outdir_path}/feature_table.rds"
+
+# H3K56ac signal
+echo "Calculating H3K56ac signal . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K56ac.bw" \
+--column H3K56ac \
+--output "${outdir_path}/feature_table.rds"
+
+# PhyloP scores
+echo "Calculating PhyloP scores . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/ConservationScores/Ath_PhyloP.bw" \
+--column PhyloP \
+--output "${outdir_path}/feature_table.rds"
+
+# PhastCons scores
+echo "Calculating PhastCons scores . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/BigWigSignal.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bigwig "${data_path}/Zenodo_files/ConservationScores/Ath_PhastCons.bw" \
+--column PhastCons \
+--output "${outdir_path}/feature_table.rds"
+
+# TE overlap
+echo "Detecting overlaps with transposable elements (TEs) . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GenomicFeatureOverlap.R" \
+--input "${outdir_path}/feature_table.rds" \
+--bed "${data_path}/Zenodo_files/TEs/TEs_Araport11.bed" \
+--column TE_Overlap \
+--output "${outdir_path}/feature_table.rds"
+
+# DNA methylation
+echo "Calculating context-aware DNA methylation coverages . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddDNAMethylation.R" \
+--input "${outdir_path}/feature_table.rds" \
+--CpG "${data_path}/Zenodo_files/DNA_Methylation/CpG_Context.cov.gz" \
+--CHG "${data_path}/Zenodo_files/DNA_Methylation/CHG_Context.cov.gz" \
+--CHH "${data_path}/Zenodo_files/DNA_Methylation/CHH_Context.cov.gz" \
+--output "${outdir_path}/feature_table.rds"
+
+# Gene-relative positions + distances
+echo "Calculating gene-relative positions/distances . . ."
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GeneRelativePositions.R" \
+--input "${outdir_path}/feature_table.rds" \
+--gff3 "${data_path}/Zenodo_files/GenomeAnnotations/Araport11_GenesTEs.gff3.gz" \
+--output "${outdir_path}/feature_table.rds"
+
+# ----------------------------------
+# Make predictions on motifs!
+# ----------------------------------
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/MotifAIPredict.R" \
+--input "${outdir_path}/feature_table.rds"
+--hf "${data_path}/model/arabidopsis-motifai-v1.0-xgbc.ubj" \
+--output "${outdir_path}/" # path only; output file names will be hard-coded in R script itself
+
+echo "Done!"
+echo "Thanks for using MotifAI (v1.0)!"
