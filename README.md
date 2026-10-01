@@ -3,7 +3,7 @@
 MotifAI is still under active development, but will come online soon.
 # MotifAI: A machine learning framework for prioritizing transcription factor binding motifs in putative regulatory DNA.
 Current software, such as the popular motif scanning tool Find Individual Motif Occurrences (FIMO), can identify all possible transcription factor (TF) binding motifs in input DNA sequences of interest. However, even from relatively short input sequences, these tools regularly output overwhelming quantities of motifs, making manual selection of high-confidence motif "hits" cumbersome and uncertain work. Trained on a corpus of genetic, epigenetic, and evolutionary datasets in the model plant species *Arabidopsis thaliana*, MotifAI is an ML-powered tool for ranking/prioritizing identified motifs based on likelihood of functionality in regulating cognate gene expression.
-# Installation & Setup
+# Installation & Configuration
 ## Installation
 Download MotifAI via `git clone`:
 ```bash
@@ -19,49 +19,32 @@ To test if MotifAI functionality is now accessible from wherever on the command 
 motifai_FetchData # executable for fetching necessary data
 motifai # executable for running MotifAI
 ```
-## Setup
-For simplicity, it is recommended to setup the required environment and install the necessary softwares for MotifAI using conda. Create ***two conda environments***: one for identifying motifs of present in your input DNA sequences using FIMO, a tool distributed as a part of the MEME suite, and another for prioritizing those motifs with MotifAI.
-	This is necessary because MEME & everything else do not play nicely in the same conda environment (i.e., the environment simply refuses to solve due to package version incompatibilities).
-#### Conda env: `meme`
-Create a conda env for running FIMO; this can be done with two simple commands:
+## Configuration
+Configure your environment for MotifAI with the configuration script. Run:
 ```bash
-conda create -n meme -c conda-forge -c bioconda meme=5.5.4
-conda activate meme
-fimo # test
+motifai_Configure
 ```
-If this pulls up the FIMO help page on the screen, you should be good to go.
-#### Conda env: `motifai`
-The MotifAI software is implemented using helper scripts in the R programming language. If you do not have R installed, you can simply use this conda environment setup through an `environment.yaml` file, part of the official GitHub distribution for MotifAI. This file is downloaded upon `git clone` (contents shown below):
-```yaml
-name: motifai
-channels:
-  - conda-forge
-  - bioconda
-  - nodefaults
-dependencies:
-  - r-base=4.3
-  - r-tidyverse
-  - r-glue
-  - r-cowplot
-  - r-showtext
-  - r-showtextdb
-  - r-sysfonts
-  - r-caret
-  - r-prroc
-  - r-argparse
-  - r-xgboost=1.7.6
-  - bioconductor-genomicranges=1.54.1
-  - bioconductor-rtracklayer=1.62.0
-  - zenodo_get
-  - huggingface_hub
-```
+This requires a recent version of mamba or conda to be installed and set on your system path. It creates three conda environments necessary for downloading data and running MotifAI.
+# Data Download
+The model underlying MotifAI is an XGBoost classification model trained on a feature table consisting of 28 total features. As a result, a feature table must be constructed based on the user's input DNA sequences/coordinates, which the trained model weights uses to. Thus, the *Arabidopsis thaliana* data files (e.g., CNS coordinates, genome-wide DNA methylation coverages, etc.) used to construct the original feature table must be downloaded from a Zenodo repository, and the trained model weights downloaded from a HuggingFace repository.
 
-Then, create the environment with the necessary packages and such:
+To download the necessary data & model weights, simply run:
 ```bash
-conda env create -f /path/to/Motif_AI/environment.yaml
-conda activate motifai
+motifai_FetchData -o /path/to/desired/output_directory/
 ```
-To save a written record of all packages & package versions installed in your conda environment:
+This outputs in the specified directory:
+1. `arabidopsis-motifai-v1.0-xgbc_FeatureTable.rds`: The original feature table used to train the model underlying MotifAI, in RDS format.
+2. `Zenodo_files/`: Directory holding all data files necessary for feature table construction.
+3. `model/`: Directory holding trained model weights.
+
+Now you are ready to use MotifAI!
+# Usage
+Command-line usage of MotifAI is simple but requires three arguments:
+1. `-i`: DNA sequences in which you desire to identify and rank motifs.
+2. `-z`: Path to the `Zenodo_files` (determined in the last step)
+3. `-o`: Path you want MotifAI's output to save to.
 ```bash
-conda env export --no-builds > environment-lock.yaml
+motifai -i dna_sequences.fa \
+		-z /path/to/Zenodo_files/
+		-o /path/to/output_directory/
 ```
