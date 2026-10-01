@@ -38,7 +38,7 @@ fi
 # Getopts
 	# \?) If argument provided is not recognized, throw this error
 	# :) If a required argument is missing, throw this error
-while getopts ":o" opt; do
+while getopts ":o:h" opt; do
 	case "$opt" in
 		o) outdir_path="$OPTARG" ;;
 		h) usage; exit 0 ;;
@@ -48,11 +48,11 @@ while getopts ":o" opt; do
 done
 
 # Enforce required argument
-if [[ -z "$input_file" ]]; then
-	echo "Error: -i <input_file> is required." >&2
-	usage
-	exit 1
-fi
+if [[ -z "${outdir_path:-}" ]]; then
+      echo "Error: -o is required" >&2
+	  usage
+	  exit 1
+  fi
 
 # -------------------
 # Download data/model
