@@ -132,14 +132,13 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/ArrangeFeatureTabl
 echo "Constructing feature table . . ."
 
 # GC content
-echo "Calculating per-motif GC content . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddGCContent.R" \
 --input "${outdir_path}/feature_table.rds" \
 --output "${outdir_path}/feature_table.rds"
 
 # Seedling ACR overlap
 echo "Detecting overlaps with accessible chromatin regions (ACRs) . . ."
-conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/ " GenomicFeatureOverlap.R \
+conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GenomicFeatureOverlap.R" \
 --input "${outdir_path}/feature_table.rds" \
 --bed "${data_path}/Zenodo_files/1weekSeedlingACR/1weekSeedlingACRs.bed" \
 --column Seedling_ACROverlap \
