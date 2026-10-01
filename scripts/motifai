@@ -26,7 +26,7 @@ Runs the MotifAI pipeline:
 
 Required argument:
     -i <file>    FASTA file holding DNA sequences in which to identify and rank motifs.
-    -d <path>    Path to directory holding `Zenodo_files/` and `model/` subdirectories (defined by user by `motifai_FetchData`).
+    -d <path>    Path to directory holding Zenodo_files/ and model/ subdirectories (defined by user by motifai_FetchData).
     -o <path>    Path to output directory.
 
 Optional arguments:
