@@ -58,10 +58,10 @@ fi
 # Getopts
 	# \?) If argument provided is not recognized, throw this error
 	# :) If a required argument is missing, throw this error
-while getopts ":d:z:o:h" opt; do
+while getopts ":i:d:o:h" opt; do
 	case "$opt" in
-		d) dna_sequences="$OPTARG" ;;
-		z) data_path="$OPTARG" ;;
+		i) dna_sequences="$OPTARG" ;;
+		d) data_path="$OPTARG" ;;
 		o) outdir_path="$OPTARG" ;;
 		h) usage; exit 0 ;;
 		\?) echo "Error: invalid option -$OPTARG" >&2; usage; exit 1 ;;
