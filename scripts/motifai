@@ -95,16 +95,16 @@ if [[ ! -f "$dna_sequences" ]]; then
 	exit 1
 fi 
 
-# Fail if user-defined directories do not exist
-if [[ -d "$data_path" ]]; then
+# Fail if user-defined data_path directory does not exist
+if [[ ! -d "$data_path" ]]; then
 	echo "Error: Directory "$data_path" does not exist." >&2
 	usage
 	exit 1
 fi
 
-if [[ -d "$outdir_path" ]]; then
-	echo "Error: Directory "$outdir_path" does not exist." >&2
-	usage
+# If output directory does not exist, create it
+if ! mkdir -p "$outdir_path"; then
+	echo "Error: could not create output directory '$outdir_path'." >&2
 	exit 1
 fi
 
