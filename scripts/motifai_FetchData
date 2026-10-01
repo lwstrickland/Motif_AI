@@ -58,7 +58,7 @@ if [[ -z "${outdir_path:-}" ]]; then
 # Download data/model
 # -------------------
 echo "Downloading feature data from Zenodo repo . . ."
-conda run -n download-tools --no-capture-output zenodo_get -o "$outdir_path" -w urls.txt -m 23046565
+conda run -n download-tools --no-capture-output zenodo_get -o "$outdir_path" -w urls.txt 23046565
 conda run -n download-tools --no-capture-output aria2c -x 16 -s 16 -i "$outdir_path"/urls.txt -d "$outdir_path"
 unzip "$outdir_path"/Zenodo_files.zip -d "$outdir_path"/Zenodo_files
 rm "$outdir_path"/Zenodo_files.zip
