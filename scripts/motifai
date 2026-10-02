@@ -115,7 +115,7 @@ echo "Identifying all possible motifs in input sequences using FIMO (v5.5.4) . .
 conda run -n meme --no-capture-output fimo --oc "${outdir_path}/FIMO_results/" \
 --bfile "${data_path}/Zenodo_files/FIMO/Athaliana_MarkovBackground.bfile" \
 "${data_path}/Zenodo_files/FIMO/FRiPThresh10perc_Filtered_At_DAP-seqLabels.meme" \
-"${dna_sequences}"
+"${dna_sequences}" --verbosity 1
 
 # ----------------------------------
 # Initialize feature table . . .
@@ -132,6 +132,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/ArrangeFeatureTabl
 echo "Constructing feature table . . ."
 
 # GC content
+echo "Calculating per-motif GC content . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddGCContent.R" \
 --input "${outdir_path}/feature_table.rds" \
 --output "${outdir_path}/feature_table.rds"
@@ -165,7 +166,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GenomicFeatureOver
 echo "Calculating H3K4me1 signal . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R" \
 --input "${outdir_path}/feature_table.rds" \
---bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K4me1.bw" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/GSM3674621_ChIP_Arabidopsis_7days_leaf_H3K4me1.bw" \
 --column H3K4me1 \
 --output "${outdir_path}/feature_table.rds"
 
@@ -173,7 +174,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R"
 echo "Calculating H3K4me3 signal . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R" \
 --input "${outdir_path}/feature_table.rds" \
---bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K4me3.bw" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/GSM3674620_ChIP_Arabidopsis_7days_leaf_H3K4me3.bw" \
 --column H3K4me3 \
 --output "${outdir_path}/feature_table.rds"
 
@@ -181,7 +182,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R"
 echo "Calculating H3K27me3 signal . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R" \
 --input "${outdir_path}/feature_table.rds" \
---bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K27me3.bw" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/GSM3674617_ChIP_Arabidopsis_7days_leaf_H3K27me3.bw" \
 --column H3K27me3 \
 --output "${outdir_path}/feature_table.rds"
 
@@ -189,7 +190,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R"
 echo "Calculating H3K36me3 signal . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R" \
 --input "${outdir_path}/feature_table.rds" \
---bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K36me3.bw" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/GSM3674618_ChIP_Arabidopsis_7days_leaf_H3K36me3.bw" \
 --column H3K36me3 \
 --output "${outdir_path}/feature_table.rds"
 
@@ -197,7 +198,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R"
 echo "Calculating H3K56ac signal . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddBigWigSignal.R" \
 --input "${outdir_path}/feature_table.rds" \
---bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/Leaf_H3K56ac.bw" \
+--bigwig "${data_path}/Zenodo_files/HistoneModChIP-seq/GSM3674619_ChIP_Arabidopsis_7days_leaf_H3K56ac.bw" \
 --column H3K56ac \
 --output "${outdir_path}/feature_table.rds"
 

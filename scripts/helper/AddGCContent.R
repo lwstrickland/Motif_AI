@@ -29,7 +29,6 @@ feat_table <- readRDS(file = argv$input)
 
 # ---- Operations --------------------------------------------------------------
 # Calculate per-motif GC content --> Add as feature to table
-message("Calculating per-motif GC content . . .")
 upd_feat_table <- feat_table |>
   mutate(GC_content = str_count(matched_sequence, "G|C") / str_length(matched_sequence))
 

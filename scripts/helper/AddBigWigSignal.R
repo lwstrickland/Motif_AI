@@ -155,10 +155,12 @@ stopifnot(length(signal) == length(gr_model))
 # Check
 message("Signal summary:")
 summary(signal)
-message("Unique signal values:")
-print(length(unique(signal)))
-message("Number of NA values:")
-print(sum(is.na(signal)))
+
+uniq_sig_vals <- length(unique(signal))
+message("Unique signal values: ", uniq_sig_vals)
+
+num_na_vals <- sum(is.na(signal))
+message("Number of NA values: ", num_na_vals)
 
 # ---- Map values back onto the full (untrimmed) feat_table ---------------
 # Use the row_id metadata carried through gr_model, rather than assuming
