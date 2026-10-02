@@ -247,9 +247,9 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GeneRelativePositi
 # Make predictions on motifs!
 # ----------------------------------
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/MotifAIPredict.R" \
---input "${outdir_path}/feature_table.rds"
+--input "${outdir_path}/feature_table.rds" \
 --hf "${data_path}/model/arabidopsis-motifai-v1.0-xgbc.ubj" \
---output "${outdir_path}/" # path only; output file names will be hard-coded in R script itself
+--output "${outdir_path}/" # path only; output file names are defined in R script itself
 
 echo "Done!"
 echo "Thanks for using MotifAI (v1.0)!"
