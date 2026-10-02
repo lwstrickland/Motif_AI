@@ -5,12 +5,12 @@ Current software, such as the popular motif scanning tool Find Individual Motif 
 ## Installation (Linux)
 Download MotifAI via `git clone`:
 ```bash
-git clone git@github.com:lwstrickland/Motif_AI.git
+git clone https://github.com/lwstrickland/Motif_AI.git
 ```
 This will create a new directory in your working directory called `Motif_AI`.
 Then, simply add the executable scripts to your user path, either by running the following on the command line (required once per session) **OR** by adding the following to your `.bashrc` or `.zshrc` (one-time only):
 ```bash
-export PATH="$PATH:/your/path/to/Motif_AI"
+export PATH="$PATH:/your/path/to/Motif_AI/scripts"
 ```
 To test if MotifAI is now accessible from wherever on the command line, type in the commands to bring up their respective help pages:
 ```bash
@@ -41,12 +41,34 @@ Now you are ready to use MotifAI!
 # Usage
 Command-line usage of MotifAI is simple but requires three arguments:
 1. `-i`: DNA sequences in which you desire to identify and rank motifs.
-2. `-d`: Path to directory holding `Zenodo_files/` and `model/` subdirectories (defined by you by `motifai_FetchData -o /path/to/data/').
+2. `-d`: Path to directory holding `Zenodo_files/` and `model/` subdirectories (defined by you by `motifai_FetchData -o /path/to/data/`).
 3. `-o`: Path you want MotifAI's output to save to.
 ```bash
 motifai -i dna_sequences.fa \
 		-d /path/to/data/
 		-o /path/to/output_directory/
 ```
+The primary output of MotifAI is `motifai_Results_mm.dd.yyyy.tsv`:
+```
+
+```
+1. `motif`: JASPAR motif code + genomic coordinates of motif
+2. `sequence`: Motif sequence
+3. `TF`: Predicted motif's corresponding transcription factor
+4. `probability`: Probability of motif's genuine TF-binding potential, assigned by MotifAI
+5. `rank`: Motif's rank/priority
+
+Other outputs includes:
+- `FIMO_results/`: Raw output of running FIMO on input DNA sequences
+- `feature_table.rds` and `feature_table.tsv`: Constructed feature table for identified motifs in RDS and TSV formats
+## Notes
+***1)*** In order for MotifAI to properly parse the genomic coordinates of your input DNA sequences (`dna_sequences.fa`), the FASTA headers must contain the genomic coordinates, like this:
+```bash
+>Chr1:456765-456900
+CAGATCATTTA . . .
+```
+This is the default output format for `bedtools getfasta`, which extracts coordinate-defined DNA sequences from FASTA files.
+
+***2)*** Currently, MotifAI is only built to rank DNA sequences in *Arabidopsis thaliana* (TAIR10 genome build). The developers are currently working on enabling broader functionality for motif ranking in other important plant species. Stay tuned!
 # Contact
 The MotifAI developers welcome suggestions for making the tool work better for the gene regulation community. If you wish to offer such a suggestion, please do not hesitate to reach the developers directly: stric132@msu.edu. Thank you for using MotifAI!

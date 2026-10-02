@@ -55,7 +55,9 @@ df_out <- df |>
   mutate(probability = round(predictions, digits = 5)) |>
   arrange(desc(probability)) |>
   mutate(rank = row_number()) |>
-  select(motif, name, probability, rank)
+  select(motif, matched_sequence, name, probability, rank) |>
+  rename(sequence = matched_sequence,
+         TF = name)
 
 # Save output files
 ## Predictions
@@ -63,5 +65,5 @@ write_tsv(x = df_out,
           file = paste0(argv$output, "motifai_Results_", format(Sys.Date(), "%m.%d.%Y"), ".tsv"))
 
 ## Full constructed feature table in TSV format (for user's easy viewing on CLI, if they wish to)
-write_tsv(x = feat_table,
+write_tsv(x = df,
           file = paste0(argv$output, "feature_table.tsv"))
