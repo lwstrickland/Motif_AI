@@ -113,9 +113,10 @@ fi
 # ----------------------------------
 echo "Identifying all possible motifs in input sequences using FIMO (v5.5.4) . . ."
 conda run -n meme --no-capture-output fimo --oc "${outdir_path}/FIMO_results/" \
+--verbosity 1 \
 --bfile "${data_path}/Zenodo_files/FIMO/Athaliana_MarkovBackground.bfile" \
 "${data_path}/Zenodo_files/FIMO/FRiPThresh10perc_Filtered_At_DAP-seqLabels.meme" \
-"${dna_sequences}" --verbosity 1
+"${dna_sequences}"
 
 # ----------------------------------
 # Initialize feature table . . .
