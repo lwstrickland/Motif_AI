@@ -240,7 +240,7 @@ conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/AddDNAMethylation.
 echo "Calculating gene-relative positions/distances . . ."
 conda run -n motifai --no-capture-output Rscript "$HELPER_DIR/GeneRelativePositions.R" \
 --input "${outdir_path}/feature_table.rds" \
---gff3 "${data_path}/Zenodo_files/GenomeAnnotations/Araport11_GenesTEs.gff3.gz" \
+--gff "${data_path}/Zenodo_files/GenomeAnnotations/Araport11_GenesTEs.gff3.gz" \
 --output "${outdir_path}/feature_table.rds"
 
 # ----------------------------------
