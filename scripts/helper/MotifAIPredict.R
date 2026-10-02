@@ -29,7 +29,7 @@ p$add_argument("--output", help = "Directory to write the final MotifAI output t
 argv <- p$parse_args()
 
 # ---- Load/prep data ----------------------------------------------------------
-feat_table <- readRDS(argv$input)
+df <- readRDS(argv$input)
 
 message("Loading model to make predictions on motifs . . .")
 model <- xgb.load(argv$hf)
