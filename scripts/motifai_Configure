@@ -21,7 +21,7 @@ fi
 create_env_if_missing() {
     local yaml_file="$1"
     local env_name="$2"
-    local log_file="/tmp/${env_name}_install.log"
+    local log_file="./${env_name}_install.log"
 
     if conda env list | grep -qE "^\s*${env_name}\s"; then
         echo "[skip]   '${env_name}' already exists."
