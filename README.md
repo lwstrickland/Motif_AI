@@ -50,7 +50,11 @@ motifai -i dna_sequences.fa \
 ```
 The primary output of MotifAI is `motifai_Results_mm.dd.yyyy.tsv`:
 ```
-
+motif	sequence	TF	probability	rank
+MA2007.2_Chr3:433-440	CACCAAAC	MYB107	0.81969	1
+MA1675.2_Chr3:12770495-12770502	ACGCAACT	NAC029	0.69437	2
+MA1245.1_Chr3:552-566	ACAGCAGCACCGTAG	ERF112	0.6531	3
+UN0846.1_Chr3:433-441	GTTTGGTGA	AT4G26030	0.62249	4
 ```
 1. `motif`: JASPAR motif code + genomic coordinates of motif
 2. `sequence`: Motif sequence
@@ -62,13 +66,13 @@ Other outputs includes:
 - `FIMO_results/`: Raw output of running FIMO on input DNA sequences
 - `feature_table.rds` and `feature_table.tsv`: Constructed feature table for identified motifs in RDS and TSV formats
 ## Notes
-***1)*** In order for MotifAI to properly parse the genomic coordinates of your input DNA sequences (`dna_sequences.fa`), the FASTA headers must contain the genomic coordinates, like this:
+**1)** In order for MotifAI to properly parse the genomic coordinates of your input DNA sequences (`dna_sequences.fa`), the FASTA headers must contain the genomic coordinates, like this:
 ```bash
 >Chr1:456765-456900
 CAGATCATTTA . . .
 ```
 This is the default output format for `bedtools getfasta`, which extracts coordinate-defined DNA sequences from FASTA files.
 
-***2)*** Currently, MotifAI is only built to rank DNA sequences in *Arabidopsis thaliana* (TAIR10 genome build). The developers are currently working on enabling broader functionality for motif ranking in other important plant species. Stay tuned!
+**2)** Currently, MotifAI is only built to rank DNA sequences in *Arabidopsis thaliana* (TAIR10 genome build). The developers are currently working on enabling broader functionality for motif ranking in other important plant species. Stay tuned!
 # Contact
 The MotifAI developers welcome suggestions for making the tool work better for the gene regulation community. If you wish to offer such a suggestion, please do not hesitate to reach the developers directly: stric132@msu.edu. Thank you for using MotifAI!
